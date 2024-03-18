@@ -184,10 +184,42 @@ void MainWindow::readData()
         return;
     }
     auto data = serialPort->readAll();
-    ui->lstMessages->addItem(QString(data));
+    float tempt = QByteArrayToFloat(data);
+    qDebug() << tempt;
+    ui->lstMessages->addItem(QString::number(tempt));
 }
 
 void MainWindow::on_btnClear_clicked()
 {
     ui->lstMessages->clear();
+}
+
+void MainWindow::on_btnUpdateValue_clicked()
+{
+    if(!serialPort->isOpen()){
+        QMessageBox::critical(this,"Port Error","Port is not opened.");
+        return;
+    }
+//    serialPort->write(ui->lnSetPoint->text().toUtf8());
+    setPoint = ui->lnSetPoint->text().toFloat();
+//    qDebug() << setPoint;
+//    setPointArray = QByteArray::fromRawData(reinterpret_cast<char *>(&setPoint),sizeof(float));
+//    qDebug() << setPointArray;
+    floatToByteArray(setPoint,setPointArray);
+    serialPort->write(setPointArray);
+}
+
+void MainWindow::floatToByteArray(float floatValue, QByteArray byteArray)
+{
+    byteArray = QByteArray::fromRawData(reinterpret_cast<char *>(&floatValue),sizeof(float));
+}
+
+float MainWindow::QByteArrayToFloat(QByteArray arr)
+{
+    QDataStream in (arr);
+    float f;
+    in.setByteOrder(QDataStream::LittleEndian);
+    in.setFloatingPointPrecision(QDataStream::SinglePrecision);     //for float (4-bytes/32 bits)
+    in >> f;
+    return f;
 }

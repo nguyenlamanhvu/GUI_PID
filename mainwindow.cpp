@@ -7,6 +7,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , serialPort(nullptr)
+    , length(0)
 {
     ui->setupUi(this);
     // Adding title for widget
@@ -184,9 +185,12 @@ void MainWindow::readData()
         return;
     }
     auto data = serialPort->readAll();
-    float tempt = QByteArrayToFloat(data);
-    qDebug() << tempt;
-    ui->lstMessages->addItem(QString::number(tempt));
+    uint8_t lengthReceive = data[1] + 3;
+    //check footer
+    if((int)data[lengthReceive-1] == 0x06)      //transfer successfully
+        ui->lstMessages->addItem("Success");
+    else                                //transfer unsuccessfully
+        ui->lstMessages->addItem("Failure");
 }
 
 void MainWindow::on_btnClear_clicked()
@@ -202,16 +206,34 @@ void MainWindow::on_btnUpdateValue_clicked()
     }
 //    serialPort->write(ui->lnSetPoint->text().toUtf8());
     setPoint = ui->lnSetPoint->text().toFloat();
+    Kp = ui->lnKp->text().toFloat();
+    Ki = ui->lnKi->text().toFloat();
+    Kd = ui->lnKd->text().toFloat();
 //    qDebug() << setPoint;
 //    setPointArray = QByteArray::fromRawData(reinterpret_cast<char *>(&setPoint),sizeof(float));
 //    qDebug() << setPointArray;
-    floatToByteArray(setPoint,setPointArray);
-    serialPort->write(setPointArray);
+    //setting for mainArray
+    this->mainArray.resize(20);
+    this->mainArray.clear();
+    //transfer setPoint
+    floatToByteArray(setPoint);
+    //transfer Kp
+    floatToByteArray(Kp);
+    //transfer Ki
+    floatToByteArray(Ki);
+    //transfer Kd
+    floatToByteArray(Kd);
+    addHeaderFooter();
+    serialPort->write(this->mainArray);
 }
 
-void MainWindow::floatToByteArray(float floatValue, QByteArray byteArray)
+void MainWindow::floatToByteArray(float floatValue)
 {
-    byteArray = QByteArray::fromRawData(reinterpret_cast<char *>(&floatValue),sizeof(float));
+    QByteArray arr = QByteArray::fromRawData(reinterpret_cast<char *>(&floatValue),sizeof(float));
+    this->mainArray.append(arr);
+    qDebug() << this->mainArray;
+    this->length += 4;
+    qDebug() << this->length;
 }
 
 float MainWindow::QByteArrayToFloat(QByteArray arr)
@@ -222,4 +244,12 @@ float MainWindow::QByteArrayToFloat(QByteArray arr)
     in.setFloatingPointPrecision(QDataStream::SinglePrecision);     //for float (4-bytes/32 bits)
     in >> f;
     return f;
+}
+
+void MainWindow::addHeaderFooter(void)
+{
+    this->mainArray.push_front(this->length);
+    this->mainArray.push_front(0x0A);       //header: mainArray[0]=0x0A
+    this->mainArray.push_back(0x05);        //footer: mainArray[size-1]=0x05
+    this->length = 0;
 }

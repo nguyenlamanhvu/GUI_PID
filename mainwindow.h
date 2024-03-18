@@ -40,24 +40,25 @@ private:
     QSerialPort *serialPort;
     QSerialPortInfo *serialInfo;
 
+    //Main array
+    QByteArray mainArray;
+    //Length of main array
+    uint8_t length;
     // Variables for setpoint value
     float setPoint = 0.0; // unit deg
-    QByteArray setPointArray;
 
     // Variables for Kp
     float Kp = 0.0;
-    QByteArray KpArray;
 
     // Variables for Ki
     float Ki = 0.0;
-    QByteArray KiArray;
 
     // Variables for Kd
     float Kd = 0.0;
-    QByteArray KdArray;
 
     void loadPorts();
-    void floatToByteArray(float floatValue, QByteArray byteArray);
+    void floatToByteArray(float floatValue);
     float QByteArrayToFloat(QByteArray arr);
+    void addHeaderFooter(void);
 };
 #endif // MAINWINDOW_H

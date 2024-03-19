@@ -1,6 +1,6 @@
 QT       += core gui serialport
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 CONFIG += c++11
 
@@ -15,12 +15,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+INCLUDEPATH += include/
+VPATH += src/
 SOURCES += \
     main.cpp \
-    mainwindow.cpp
+    src/mainwindow.cpp \
+    src/qcustomplot.cpp
 
 HEADERS += \
-    mainwindow.h
+    include/mainwindow.h \
+    include/qcustomplot.h
 
 FORMS += \
     mainwindow.ui

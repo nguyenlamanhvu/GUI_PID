@@ -7,7 +7,7 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QDataStream>
-
+#include <QTimer>
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -35,10 +35,12 @@ private slots:
     void on_btnClear_clicked();
 
     void on_btnUpdateValue_clicked();
+    void realtimePlot();
 private:
     Ui::MainWindow *ui;
     QSerialPort *serialPort;
     QSerialPortInfo *serialInfo;
+    QTimer *timerPlot;
 
     //Main array
     QByteArray mainArray;
@@ -66,5 +68,6 @@ private:
     void floatToByteArray(float floatValue);
     float QByteArrayToFloat(QByteArray arr);
     void addHeaderFooter(void);
+    void addMotorGraph(void);
 };
 #endif // MAINWINDOW_H

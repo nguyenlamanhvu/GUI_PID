@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
     QWidget::setWindowTitle("Serial Port Example");
 
     loadPorts();
+    addMotorGraph();
 }
 
 MainWindow::~MainWindow()
@@ -267,4 +268,54 @@ void MainWindow::addHeaderFooter(void)
     this->mainArray.push_front(0x0A);       //header: mainArray[0]=0x0A
     this->mainArray.push_back(0x05);        //footer: mainArray[size-1]=0x05
     this->length = 0;
+}
+
+void MainWindow::addMotorGraph(void)
+{
+    /* Add graph and set the curve line color to green */
+    ui->motorPlot->addGraph();
+    ui->motorPlot->graph(0)->setPen(QPen(Qt::red));
+    ui->motorPlot->graph(0)->setAntialiasedFill(false);
+
+    /* Configure x-Axis as time in secs */
+    QSharedPointer<QCPAxisTickerTime> timeTicker(new QCPAxisTickerTime);
+    timeTicker->setTimeFormat("%s");
+    ui->motorPlot->xAxis->setTicker(timeTicker);
+    ui->motorPlot->axisRect()->setupFullAxesBox();
+
+    /* Configure x and y-Axis to display Labels */
+    ui->motorPlot->xAxis->setTickLabelFont(QFont(QFont().family(),8));
+    ui->motorPlot->yAxis->setTickLabelFont(QFont(QFont().family(),8));
+    ui->motorPlot->xAxis->setLabel("Time(s)");
+    ui->motorPlot->yAxis->setLabel("Speed(RPM)");
+
+    /* Make top and right axis visible, but without ticks and label */
+    ui->motorPlot->xAxis2->setVisible(true);
+    ui->motorPlot->yAxis->setVisible(true);
+    ui->motorPlot->xAxis2->setTicks(false);
+    ui->motorPlot->yAxis2->setTicks(false);
+    ui->motorPlot->xAxis2->setTickLabels(false);
+    ui->motorPlot->yAxis2->setTickLabels(false);
+
+    /* Set up and initialize the graph plotting timer */
+    timerPlot = new QTimer(this);
+    connect(timerPlot, SIGNAL(timeout()),this,SLOT(realtimePlot()));
+    timerPlot->start(5);
+}
+
+void MainWindow::realtimePlot()
+{
+    static QTime time(QTime::currentTime());
+    double key = time.elapsed()/1000.0;
+    static double lastPointKey = 0;
+    if(key - lastPointKey > 0.002)
+    {
+        ui->motorPlot->graph(0)->addData(key, (double)enc_val);
+        lastPointKey = key;
+    }
+
+    /* make key axis range scroll right with the data at a constant range of 8. */
+    ui->motorPlot->graph(0)->rescaleValueAxis();
+    ui->motorPlot->xAxis->setRange(key, 8, Qt::AlignRight);
+    ui->motorPlot->replot();
 }

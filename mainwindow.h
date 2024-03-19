@@ -44,6 +44,10 @@ private:
     QByteArray mainArray;
     //Length of main array
     uint8_t length;
+    //Mode of motor
+    uint8_t mode;               //mode: 0x01(SET RUN MOTOR)
+                                //mode: 0x02(SET STOP MOTOR)
+                                //mode: 0x03(RECEIVE MODE)
     // Variables for setpoint value
     float setPoint = 0.0; // unit deg
 
@@ -56,6 +60,8 @@ private:
     // Variables for Kd
     float Kd = 0.0;
 
+    //Variales for encoder
+    float enc_val = 0.0;
     void loadPorts();
     void floatToByteArray(float floatValue);
     float QByteArrayToFloat(QByteArray arr);

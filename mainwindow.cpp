@@ -185,11 +185,19 @@ void MainWindow::readData()
         return;
     }
     auto data = serialPort->readAll();
-    uint8_t lengthReceive = data[1] + 3;
+    uint8_t lengthReceive = data[1] + 4;
+    qDebug() << lengthReceive;
     //check footer
-    if((int)data[lengthReceive-1] == 0x06)      //transfer successfully
+    if((int)data[lengthReceive-1] == 0x06){     //transfer successfully
+        if((int)data[2] == 0x03){               //this is receive mode
+            data.remove(lengthReceive-1,1);     //remove footer
+            data.remove(0,3);                   //remove header, size and mode
+            enc_val = QByteArrayToFloat(data);
+            ui->lstMessages->addItem(QString::number(enc_val));
+        }
         ui->lstMessages->addItem("Success");
-    else                                //transfer unsuccessfully
+    }
+    else                                        //transfer unsuccessfully
         ui->lstMessages->addItem("Failure");
 }
 
@@ -215,6 +223,12 @@ void MainWindow::on_btnUpdateValue_clicked()
     //setting for mainArray
     this->mainArray.resize(20);
     this->mainArray.clear();
+    if(ui->rdRun->isChecked()){
+        this->mode = 0x01;          //SET RUN MODE
+    }
+    if(ui->rdStop->isChecked()){
+        this->mode = 0x02;          //SET STOP MODE
+    }
     //transfer setPoint
     floatToByteArray(setPoint);
     //transfer Kp
@@ -248,7 +262,8 @@ float MainWindow::QByteArrayToFloat(QByteArray arr)
 
 void MainWindow::addHeaderFooter(void)
 {
-    this->mainArray.push_front(this->length);
+    this->mainArray.push_front(this->mode);
+    this->mainArray.push_front(this->length);       //size of array without header, footer and length
     this->mainArray.push_front(0x0A);       //header: mainArray[0]=0x0A
     this->mainArray.push_back(0x05);        //footer: mainArray[size-1]=0x05
     this->length = 0;

@@ -8,6 +8,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
     , serialPort(nullptr)
     , length(0)
+    , stopPlot(true)
 {
     ui->setupUi(this);
     // Adding title for widget
@@ -229,6 +230,7 @@ void MainWindow::on_btnUpdateValue_clicked()
     }
     if(ui->rdStop->isChecked()){
         this->mode = 0x02;          //SET STOP MODE
+        this->setPoint = 0;
     }
     //transfer setPoint
     floatToByteArray(setPoint);
@@ -276,6 +278,11 @@ void MainWindow::addMotorGraph(void)
     ui->motorPlot->addGraph();
     ui->motorPlot->graph(0)->setPen(QPen(Qt::red));
     ui->motorPlot->graph(0)->setAntialiasedFill(false);
+    ui->motorPlot->graph(0)->setName("PID Output");
+    ui->motorPlot->addGraph();
+    ui->motorPlot->graph(1)->setPen(QPen(Qt::blue));
+    ui->motorPlot->graph(1)->setAntialiasedFill(false);
+    ui->motorPlot->graph(1)->setName("Ref. Input");
 
     /* Configure x-Axis as time in secs */
     QSharedPointer<QCPAxisTickerTime> timeTicker(new QCPAxisTickerTime);
@@ -297,6 +304,14 @@ void MainWindow::addMotorGraph(void)
     ui->motorPlot->xAxis2->setTickLabels(false);
     ui->motorPlot->yAxis2->setTickLabels(false);
 
+    ui->motorPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->motorPlot->legend->setVisible(true);
+    /* Add title of the graph */
+
+    ui->motorPlot->plotLayout()->insertRow(0);
+    QCPTextElement *title = new QCPTextElement(ui->motorPlot, "PID Controller", QFont("sans", 17, QFont::Bold));
+    ui->motorPlot->plotLayout()->addElement(0, 0, title);
+
     /* Set up and initialize the graph plotting timer */
     timerPlot = new QTimer(this);
     connect(timerPlot, SIGNAL(timeout()),this,SLOT(realtimePlot()));
@@ -304,18 +319,43 @@ void MainWindow::addMotorGraph(void)
 }
 
 void MainWindow::realtimePlot()
-{
+{    
     static QTime time(QTime::currentTime());
-    double key = time.elapsed()/1000.0;
+    static double storeKey = 0;
+    double key = time.elapsed()/1000.0 + storeKey;
     static double lastPointKey = 0;
-    if(key - lastPointKey > 0.002)
-    {
-        ui->motorPlot->graph(0)->addData(key, (double)enc_val);
-        lastPointKey = key;
-    }
+    if(this->stopPlot == false){
+        if(key - lastPointKey > 0.002)
+        {
+            ui->motorPlot->graph(0)->addData(key, (double)enc_val);
+            ui->motorPlot->graph(1)->addData(key, (double)setPoint);
+            lastPointKey = key;
+        }
 
-    /* make key axis range scroll right with the data at a constant range of 8. */
-    ui->motorPlot->graph(0)->rescaleValueAxis();
-    ui->motorPlot->xAxis->setRange(key, 8, Qt::AlignRight);
+        /* make key axis range scroll right with the data at a constant range of 8. */
+        ui->motorPlot->graph(0)->rescaleValueAxis();
+        ui->motorPlot->xAxis->setRange(key, 8, Qt::AlignRight);
+        ui->motorPlot->replot();
+    }
+    else{
+        time.restart();
+        storeKey = lastPointKey;
+    }
+}
+
+void MainWindow::on_btnStopPlot_clicked()
+{
+    this->stopPlot = true;
+}
+
+void MainWindow::on_btnClearPlot_clicked()
+{
+    ui->motorPlot->graph(0)->data()->clear();
+    ui->motorPlot->graph(1)->data()->clear();
     ui->motorPlot->replot();
+}
+
+void MainWindow::on_btnRunPlot_clicked()
+{
+    this->stopPlot = false;
 }

@@ -36,12 +36,17 @@ private slots:
 
     void on_btnUpdateValue_clicked();
     void realtimePlot();
+    void on_btnStopPlot_clicked();
+
+    void on_btnClearPlot_clicked();
+
+    void on_btnRunPlot_clicked();
+
 private:
     Ui::MainWindow *ui;
     QSerialPort *serialPort;
     QSerialPortInfo *serialInfo;
     QTimer *timerPlot;
-
     //Main array
     QByteArray mainArray;
     //Length of main array
@@ -50,6 +55,8 @@ private:
     uint8_t mode;               //mode: 0x01(SET RUN MOTOR)
                                 //mode: 0x02(SET STOP MOTOR)
                                 //mode: 0x03(RECEIVE MODE)
+    //Stop plotting
+    bool stopPlot;
     // Variables for setpoint value
     float setPoint = 0.0; // unit deg
 

@@ -144,7 +144,7 @@ void MainWindow::on_btnOpenPort_clicked()
         QMessageBox::information(this,"Result","Port opened successfully.");
         QObject::connect(serialPort,&QSerialPort::readyRead,this,&MainWindow::readData);
     } else {
-        QMessageBox::critical(this,"Port Error","Unable to open specified port...");
+        QMessageBox::critical(this,"Port Error","Unable to open specified port: "+ serialPort->errorString());
     }
 }
 
@@ -160,10 +160,6 @@ void MainWindow::on_btnClosePort_clicked()
 
 void MainWindow::on_btnRefresh_clicked()
 {
-    if(!serialPort->isOpen()){
-        QMessageBox::critical(this,"Port Error","Port is not opened.");
-        return;
-    }
     ui->cmbPorts->clear();
     foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()){
         ui->cmbPorts->addItem(info.portName());
@@ -173,10 +169,6 @@ void MainWindow::on_btnRefresh_clicked()
 
 void MainWindow::on_btnSend_clicked()
 {
-    if(!serialPort->isOpen()){
-        QMessageBox::critical(this,"Port Error","Port is not opened.");
-        return;
-    }
     serialPort->write(ui->lnMessage->text().toUtf8());
 }
 
@@ -187,20 +179,51 @@ void MainWindow::readData()
         return;
     }
     auto data = serialPort->readAll();
-    uint8_t lengthReceive = data[1] + 4;
-    qDebug() << lengthReceive;
-    //check footer
-    if((int)data[lengthReceive-1] == 0x06){     //transfer successfully
-        if((int)data[2] == 0x03){               //this is receive mode
-            data.remove(lengthReceive-1,1);     //remove footer
-            data.remove(0,3);                   //remove header, size and mode
-            enc_val = QByteArrayToFloat(data);
-            ui->lstMessages->addItem(QString::number(enc_val));
+    qDebug() << data;
+    this->gRxDataFrame = byteArrayToStruct(data);
+    /*!< Check header and footer */
+    if(this->gRxDataFrame.header == 0x0A && this->gRxDataFrame.footer == 0x06)
+    {
+        if(this->gRxDataFrame.mode == GUI_RECEIVE_PARAMETER_MODE)
+        {
+            //Will finish when I have time.
+
         }
-        ui->lstMessages->addItem("Success");
+        else if (this->gRxDataFrame.mode == GUI_RECEIVE_LEFT_SPEED_MODE)
+        {
+            /*!< Check length of data buffer */
+            if(this->gRxDataFrame.length == 4)
+            {
+                memcpy(uartData.byteArray, this->gRxDataFrame.dataBuff, sizeof(uartData.byteArray));
+                this->enc_val = uartData.floatValue;
+                ui->lstMessages->addItem("Left Motor: " + QString::number(enc_val));
+                ui->lblRunningMotor->setText("Left Motor");
+            }
+            else                //transfer unsuccessfully
+            {
+                ui->lstMessages->addItem("Failure");
+            }
+        }
+        else if (this->gRxDataFrame.mode == GUI_RECEIVE_RIGHT_SPEED_MODE)
+        {
+            /*!< Check length of data buffer */
+            if(this->gRxDataFrame.length == 4)
+            {
+                memcpy(uartData.byteArray, this->gRxDataFrame.dataBuff, sizeof(uartData.byteArray));
+                this->enc_val = uartData.floatValue;
+                ui->lstMessages->addItem("Right Motor: " + QString::number(enc_val));
+                ui->lblRunningMotor->setText("Right Motor");
+            }
+            else                //transfer unsuccessfully
+            {
+                ui->lstMessages->addItem("Failure");
+            }
+        }
     }
-    else                                        //transfer unsuccessfully
+    else                    //transfer unsuccessfully
+    {
         ui->lstMessages->addItem("Failure");
+    }
 }
 
 void MainWindow::on_btnClear_clicked()
@@ -210,37 +233,60 @@ void MainWindow::on_btnClear_clicked()
 
 void MainWindow::on_btnUpdateValue_clicked()
 {
-    if(!serialPort->isOpen()){
-        QMessageBox::critical(this,"Port Error","Port is not opened.");
+//    serialPort->write(ui->lnSetPoint->text().toUtf8());
+    /*!< Add length */
+    this->gTxDataFrame.length = 0;
+    /*!< Add header */
+    this->gTxDataFrame.header = 0x0A;
+    /*!< Add footer */
+    this->gTxDataFrame.footer = 0x05;
+    /*!< Add mode */
+    if(ui->cbLeftMotor->isChecked() && ui->cbRightMotor->isChecked())
+    {
+        QMessageBox::critical(this,"Choose Motor Error","Unable to choose motor...");
         return;
     }
-//    serialPort->write(ui->lnSetPoint->text().toUtf8());
-    setPoint = ui->lnSetPoint->text().toFloat();
-    Kp = ui->lnKp->text().toFloat();
-    Ki = ui->lnKi->text().toFloat();
-    Kd = ui->lnKd->text().toFloat();
-//    qDebug() << setPoint;
-//    setPointArray = QByteArray::fromRawData(reinterpret_cast<char *>(&setPoint),sizeof(float));
-//    qDebug() << setPointArray;
+    else if(ui->cbLeftMotor->isChecked() && ui->rdRun->isChecked())
+    {
+        this->gTxDataFrame.mode = GUI_SET_LEFT_RUN_MODE;
+    }
+    else if(ui->cbLeftMotor->isChecked() && ui->rdStop->isChecked())
+    {
+        this->gTxDataFrame.mode = GUI_SET_LEFT_STOP_MODE;
+    }
+    else if(ui->cbRightMotor->isChecked() && ui->rdRun->isChecked())
+    {
+        this->gTxDataFrame.mode = GUI_SET_RIGHT_RUN_MODE;
+    }
+    else if(ui->cbRightMotor->isChecked() && ui->rdStop->isChecked())
+    {
+        this->gTxDataFrame.mode = GUI_SET_RIGHT_STOP_MODE;
+    }
+
+    /*!< Add Set point value to gRxDataFrame */
+    this->uartData.floatValue = ui->lnSetPoint->text().toFloat();
+    memcpy(this->gTxDataFrame.dataBuff, this->uartData.byteArray, sizeof(uartData.byteArray));
+    this->gTxDataFrame.length += sizeof(uartData.byteArray);
+    /*!< Add Kp value to gRxDataFrame */
+    this->uartData.floatValue = ui->lnKp->text().toFloat();
+    memcpy(this->gTxDataFrame.dataBuff + 4, this->uartData.byteArray, sizeof(uartData.byteArray));
+    this->gTxDataFrame.length += sizeof(uartData.byteArray);
+    /*!< Add Ki value to gRxDataFrame */
+    this->uartData.floatValue = ui->lnKi->text().toFloat();
+    memcpy(this->gTxDataFrame.dataBuff + 8, this->uartData.byteArray, sizeof(uartData.byteArray));
+    this->gTxDataFrame.length += sizeof(uartData.byteArray);
+    /*!< Add Kd value to gRxDataFrame */
+    this->uartData.floatValue = ui->lnKd->text().toFloat();
+    memcpy(this->gTxDataFrame.dataBuff + 12, this->uartData.byteArray, sizeof(uartData.byteArray));
+    this->gTxDataFrame.length += sizeof(uartData.byteArray);
+
     //setting for mainArray
-    this->mainArray.resize(20);
+    this->mainArray.resize(BUFF_SIZE);
     this->mainArray.clear();
-    if(ui->rdRun->isChecked()){
-        this->mode = 0x01;          //SET RUN MODE
-    }
-    if(ui->rdStop->isChecked()){
-        this->mode = 0x02;          //SET STOP MODE
-        this->setPoint = 0;
-    }
-    //transfer setPoint
-    floatToByteArray(setPoint);
-    //transfer Kp
-    floatToByteArray(Kp);
-    //transfer Ki
-    floatToByteArray(Ki);
-    //transfer Kd
-    floatToByteArray(Kd);
-    addHeaderFooter();
+    this->mainArray = structToByteArray(gTxDataFrame);
+
+    qDebug() << this->mainArray;
+
     serialPort->write(this->mainArray);
 }
 
@@ -358,4 +404,37 @@ void MainWindow::on_btnClearPlot_clicked()
 void MainWindow::on_btnRunPlot_clicked()
 {
     this->stopPlot = false;
+}
+
+QByteArray MainWindow::structToByteArray(const dataFrame_t &myDataFrame)
+{
+    QByteArray byteArray;
+    QDataStream out(&byteArray, QIODevice::WriteOnly);
+
+    // Write the struct members into the byte array
+    out << myDataFrame.header;
+    out << myDataFrame.length;
+    out << static_cast<uint8_t>(myDataFrame.mode);
+    out.writeRawData(reinterpret_cast<const char*>(myDataFrame.dataBuff), sizeof(myDataFrame.dataBuff));  // Write raw buffer
+    out << myDataFrame.footer;
+
+    return byteArray;
+}
+
+dataFrame_t MainWindow::byteArrayToStruct(const QByteArray &byteArray)
+{
+    dataFrame_t myDataFrame;
+    QDataStream in(byteArray);
+
+    uint8_t modeValue;  // Temp variable for enum
+
+    // Read the data from the byte array into the struct members
+    in >> myDataFrame.header;
+    in >> myDataFrame.length;
+    in >> modeValue;
+    myDataFrame.mode = static_cast<motorMode_t>(modeValue);  // Cast back to enum
+    in.readRawData(reinterpret_cast<char*>(myDataFrame.dataBuff), sizeof(myDataFrame.dataBuff));  // Read raw buffer
+    in >> myDataFrame.footer;
+
+    return myDataFrame;
 }

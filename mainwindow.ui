@@ -269,7 +269,7 @@
       <x>10</x>
       <y>10</y>
       <width>301</width>
-      <height>281</height>
+      <height>371</height>
      </rect>
     </property>
     <property name="title">
@@ -371,7 +371,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>230</y>
+       <y>270</y>
        <width>281</width>
        <height>41</height>
       </rect>
@@ -406,6 +406,45 @@
       <string>Stop motor</string>
      </property>
     </widget>
+    <widget class="QCheckBox" name="cbLeftMotor">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>230</y>
+       <width>92</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Left motor</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="cbRightMotor">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>230</y>
+       <width>101</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Right motor</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnGetParameter">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>320</y>
+       <width>281</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Get Parameter</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QCustomPlot" name="motorPlot" native="true">
     <property name="geometry">
@@ -421,7 +460,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>310</y>
+      <y>430</y>
       <width>301</width>
       <height>231</height>
      </rect>
@@ -468,6 +507,42 @@
       <string>Clear Plot</string>
      </property>
     </widget>
+   </widget>
+   <widget class="QLabel" name="label_11">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>390</y>
+      <width>121</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Running motor:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lblRunningMotor">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>390</y>
+      <width>121</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">

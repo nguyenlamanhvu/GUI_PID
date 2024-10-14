@@ -13,6 +13,35 @@ namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
 #define BUFF_SIZE 20
+
+enum motorMode_t:uint8_t
+{
+    GUI_SET_LEFT_RUN_MODE = 		0x01,
+    GUI_SET_LEFT_STOP_MODE = 		0x02,
+    GUI_SET_RIGHT_RUN_MODE = 		0x03,
+    GUI_SET_RIGHT_STOP_MODE = 		0x04,
+    GUI_RECEIVE_LEFT_SPEED_MODE = 	0x05,
+    GUI_RECEIVE_RIGHT_SPEED_MODE =  0x06,
+    GUI_RECEIVE_PARAMETER_MODE = 	0x07,
+};
+
+#pragma pack(1) // 1 byte alignment
+struct dataFrame_t
+{
+    uint8_t 	header;							/*!< Header of data frame */
+    uint8_t 	length;							/*!< Length of data (exclude header, length, mode, footer) */
+    motorMode_t	mode;							/*!< Mode */
+    uint8_t		dataBuff[BUFF_SIZE - 4];        /*!< Data buffer */
+    uint8_t		footer;							/*!< Footer of data frame */
+};
+#pragma pack()   // End of pragma pack scope
+
+union FloatByteArray_t
+{
+    float floatValue;
+    uint8_t byteArray[4];
+};
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -47,6 +76,11 @@ private:
     QSerialPort *serialPort;
     QSerialPortInfo *serialInfo;
     QTimer *timerPlot;
+
+    dataFrame_t gTxDataFrame;
+    dataFrame_t gRxDataFrame;
+    FloatByteArray_t uartData;
+
     //Main array
     QByteArray mainArray;
     //Length of main array
@@ -76,5 +110,7 @@ private:
     float QByteArrayToFloat(QByteArray arr);
     void addHeaderFooter(void);
     void addMotorGraph(void);
+    QByteArray structToByteArray(const dataFrame_t &myDataFrame);
+    dataFrame_t byteArrayToStruct(const QByteArray &byteArray);
 };
 #endif // MAINWINDOW_H

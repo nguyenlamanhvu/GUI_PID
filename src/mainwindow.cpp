@@ -184,13 +184,69 @@ void MainWindow::readData()
     /*!< Check header and footer */
     if(this->gRxDataFrame.header == 0x0A && this->gRxDataFrame.footer == 0x06)
     {
-        if(this->gRxDataFrame.mode == GUI_RECEIVE_PARAMETER_MODE)
-        {
-            //Will finish when I have time.
-
-        }
-        else if (this->gRxDataFrame.mode == GUI_RECEIVE_LEFT_SPEED_MODE)
-        {
+        switch (this->gRxDataFrame.mode) {
+        case GUI_RECEIVE_PARAMETER_LEFT:
+            /*!< Check length of data buffer */
+            if(this->gRxDataFrame.length == 16)
+            {
+                ui->lblRunningMotor->setText("Left Motor");
+                /*!< Set point */
+                memcpy(uartData.byteArray, this->gRxDataFrame.dataBuff, sizeof(uartData.byteArray));
+                this->setPoint = uartData.floatValue;
+                ui->lnSetPoint->setText(QString::number(this->setPoint));
+                ui->lstMessages->addItem("Set Point: " + QString::number(this->setPoint));
+                /*!< Kp */
+                memcpy(uartData.byteArray, this->gRxDataFrame.dataBuff + 4, sizeof(uartData.byteArray));
+                this->Kp = uartData.floatValue;
+                ui->lnKp->setText(QString::number(this->Kp));
+                ui->lstMessages->addItem("Kp: " + QString::number(this->Kp));
+                /*!< Ki */
+                memcpy(uartData.byteArray, this->gRxDataFrame.dataBuff + 8, sizeof(uartData.byteArray));
+                this->Ki = uartData.floatValue;
+                ui->lnKi->setText(QString::number(this->Ki));
+                ui->lstMessages->addItem("Ki: " + QString::number(this->Ki));
+                /*!< Kd */
+                memcpy(uartData.byteArray, this->gRxDataFrame.dataBuff + 12, sizeof(uartData.byteArray));
+                this->Kd = uartData.floatValue;
+                ui->lnKd->setText(QString::number(this->Kd));
+                ui->lstMessages->addItem("Kd: " + QString::number(this->Kd));
+            }
+            else                //transfer unsuccessfully
+            {
+                ui->lstMessages->addItem("Failure");
+            }
+            break;
+        case GUI_RECEIVE_PARAMETER_RIGHT:
+            if(this->gRxDataFrame.length == 16)
+            {
+                ui->lblRunningMotor->setText("Right Motor");
+                /*!< Set point */
+                memcpy(uartData.byteArray, this->gRxDataFrame.dataBuff, sizeof(uartData.byteArray));
+                this->setPoint = uartData.floatValue;
+                ui->lnSetPoint->setText(QString::number(this->setPoint));
+                ui->lstMessages->addItem("Set Point: " + QString::number(this->setPoint));
+                /*!< Kp */
+                memcpy(uartData.byteArray, this->gRxDataFrame.dataBuff + 4, sizeof(uartData.byteArray));
+                this->Kp = uartData.floatValue;
+                ui->lnKp->setText(QString::number(this->Kp));
+                ui->lstMessages->addItem("Kp: " + QString::number(this->Kp));
+                /*!< Ki */
+                memcpy(uartData.byteArray, this->gRxDataFrame.dataBuff + 8, sizeof(uartData.byteArray));
+                this->Ki = uartData.floatValue;
+                ui->lnKi->setText(QString::number(this->Ki));
+                ui->lstMessages->addItem("Ki: " + QString::number(this->Ki));
+                /*!< Kd */
+                memcpy(uartData.byteArray, this->gRxDataFrame.dataBuff + 12, sizeof(uartData.byteArray));
+                this->Kd = uartData.floatValue;
+                ui->lnKd->setText(QString::number(this->Kd));
+                ui->lstMessages->addItem("Kd: " + QString::number(this->Kd));
+            }
+            else                //transfer unsuccessfully
+            {
+                ui->lstMessages->addItem("Failure");
+            }
+            break;
+        case GUI_RECEIVE_LEFT_SPEED_MODE:
             /*!< Check length of data buffer */
             if(this->gRxDataFrame.length == 4)
             {
@@ -203,9 +259,8 @@ void MainWindow::readData()
             {
                 ui->lstMessages->addItem("Failure");
             }
-        }
-        else if (this->gRxDataFrame.mode == GUI_RECEIVE_RIGHT_SPEED_MODE)
-        {
+            break;
+        case GUI_RECEIVE_RIGHT_SPEED_MODE:
             /*!< Check length of data buffer */
             if(this->gRxDataFrame.length == 4)
             {
@@ -218,7 +273,45 @@ void MainWindow::readData()
             {
                 ui->lstMessages->addItem("Failure");
             }
+            break;
+        default:
+            break;
         }
+//        if(this->gRxDataFrame.mode == GUI_RECEIVE_PARAMETER_MODE)
+//        {
+//            //Will finish when I have time.
+
+//        }
+//        else if (this->gRxDataFrame.mode == GUI_RECEIVE_LEFT_SPEED_MODE)
+//        {
+//            /*!< Check length of data buffer */
+//            if(this->gRxDataFrame.length == 4)
+//            {
+//                memcpy(uartData.byteArray, this->gRxDataFrame.dataBuff, sizeof(uartData.byteArray));
+//                this->enc_val = uartData.floatValue;
+//                ui->lstMessages->addItem("Left Motor: " + QString::number(enc_val));
+//                ui->lblRunningMotor->setText("Left Motor");
+//            }
+//            else                //transfer unsuccessfully
+//            {
+//                ui->lstMessages->addItem("Failure");
+//            }
+//        }
+//        else if (this->gRxDataFrame.mode == GUI_RECEIVE_RIGHT_SPEED_MODE)
+//        {
+//            /*!< Check length of data buffer */
+//            if(this->gRxDataFrame.length == 4)
+//            {
+//                memcpy(uartData.byteArray, this->gRxDataFrame.dataBuff, sizeof(uartData.byteArray));
+//                this->enc_val = uartData.floatValue;
+//                ui->lstMessages->addItem("Right Motor: " + QString::number(enc_val));
+//                ui->lblRunningMotor->setText("Right Motor");
+//            }
+//            else                //transfer unsuccessfully
+//            {
+//                ui->lstMessages->addItem("Failure");
+//            }
+//        }
     }
     else                    //transfer unsuccessfully
     {
@@ -233,7 +326,6 @@ void MainWindow::on_btnClear_clicked()
 
 void MainWindow::on_btnUpdateValue_clicked()
 {
-//    serialPort->write(ui->lnSetPoint->text().toUtf8());
     /*!< Add length */
     this->gTxDataFrame.length = 0;
     /*!< Add header */
@@ -261,6 +353,11 @@ void MainWindow::on_btnUpdateValue_clicked()
     else if(ui->cbRightMotor->isChecked() && ui->rdStop->isChecked())
     {
         this->gTxDataFrame.mode = GUI_SET_RIGHT_STOP_MODE;
+    }
+    else
+    {
+        QMessageBox::critical(this,"Choose Motor Error","Unable to choose motor...");
+        return;
     }
 
     /*!< Add Set point value to gRxDataFrame */
@@ -437,4 +534,47 @@ dataFrame_t MainWindow::byteArrayToStruct(const QByteArray &byteArray)
     in >> myDataFrame.footer;
 
     return myDataFrame;
+}
+/* Dump data */
+uint8_t dumpData[16] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
+void MainWindow::on_btnGetParameter_clicked()
+{
+    /*!< Clear data frame */
+    memset(&gTxDataFrame, 0, sizeof(dataFrame_t));
+    /*!< Add length */
+    this->gTxDataFrame.length = 16;
+    /*!< Add header */
+    this->gTxDataFrame.header = 0x0A;
+    /*!< Add footer */
+    this->gTxDataFrame.footer = 0x05;
+    /*!< Add mode */
+    if(ui->cbLeftMotor->isChecked() && ui->cbRightMotor->isChecked())
+    {
+        QMessageBox::critical(this,"Choose Motor Error","Unable to choose motor...");
+        return;
+    }
+    else if(ui->cbLeftMotor->isChecked())
+    {
+        this->gTxDataFrame.mode = GUI_GET_PARAMETER_LEFT;
+    }
+    else if(ui->cbRightMotor->isChecked())
+    {
+        this->gTxDataFrame.mode = GUI_GET_PARAMETER_RIGHT;
+    }
+    else
+    {
+        QMessageBox::critical(this,"Choose Motor Error","Unable to choose motor...");
+        return;
+    }
+
+    memcpy(gTxDataFrame.dataBuff, dumpData, 16);
+
+    //setting for mainArray
+    this->mainArray.resize(BUFF_SIZE);
+    this->mainArray.clear();
+    this->mainArray = structToByteArray(gTxDataFrame);
+
+    qDebug() << this->mainArray;
+
+    serialPort->write(this->mainArray);
 }

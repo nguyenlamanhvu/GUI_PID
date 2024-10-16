@@ -20,9 +20,12 @@ enum motorMode_t:uint8_t
     GUI_SET_LEFT_STOP_MODE = 		0x02,
     GUI_SET_RIGHT_RUN_MODE = 		0x03,
     GUI_SET_RIGHT_STOP_MODE = 		0x04,
-    GUI_RECEIVE_LEFT_SPEED_MODE = 	0x05,
-    GUI_RECEIVE_RIGHT_SPEED_MODE =  0x06,
-    GUI_RECEIVE_PARAMETER_MODE = 	0x07,
+    GUI_GET_PARAMETER_LEFT =        0x05,
+    GUI_GET_PARAMETER_RIGHT =       0x06,
+    GUI_RECEIVE_LEFT_SPEED_MODE = 	0x07,
+    GUI_RECEIVE_RIGHT_SPEED_MODE =  0x08,
+    GUI_RECEIVE_PARAMETER_LEFT = 	0x09,
+    GUI_RECEIVE_PARAMETER_RIGHT =   0x0A,
 };
 
 #pragma pack(1) // 1 byte alignment
@@ -70,6 +73,8 @@ private slots:
     void on_btnClearPlot_clicked();
 
     void on_btnRunPlot_clicked();
+
+    void on_btnGetParameter_clicked();
 
 private:
     Ui::MainWindow *ui;

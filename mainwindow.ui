@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1343</width>
-    <height>755</height>
+    <height>768</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -43,7 +43,7 @@
       <x>1030</x>
       <y>450</y>
       <width>301</width>
-      <height>211</height>
+      <height>231</height>
      </rect>
     </property>
    </widget>
@@ -254,7 +254,7 @@
     <property name="geometry">
      <rect>
       <x>1220</x>
-      <y>670</y>
+      <y>690</y>
       <width>111</width>
       <height>31</height>
      </rect>
@@ -269,7 +269,7 @@
       <x>10</x>
       <y>10</y>
       <width>301</width>
-      <height>371</height>
+      <height>391</height>
      </rect>
     </property>
     <property name="title">
@@ -371,7 +371,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>270</y>
+       <y>290</y>
        <width>281</width>
        <height>41</height>
       </rect>
@@ -436,13 +436,52 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>320</y>
+       <y>340</y>
        <width>281</width>
        <height>41</height>
       </rect>
      </property>
      <property name="text">
       <string>Get Parameter</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_12">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>260</y>
+       <width>101</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Fuzzy option:</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="rdFuzzyYes">
+     <property name="geometry">
+      <rect>
+       <x>130</x>
+       <y>260</y>
+       <width>112</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Yes</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="rdFuzzyNo">
+     <property name="geometry">
+      <rect>
+       <x>200</x>
+       <y>260</y>
+       <width>112</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>No</string>
      </property>
     </widget>
    </widget>
@@ -452,7 +491,7 @@
       <x>330</x>
       <y>30</y>
       <width>691</width>
-      <height>631</height>
+      <height>651</height>
      </rect>
     </property>
    </widget>
@@ -460,7 +499,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>430</y>
+      <y>450</y>
       <width>301</width>
       <height>231</height>
      </rect>
@@ -512,7 +551,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>390</y>
+      <y>410</y>
       <width>121</width>
       <height>31</height>
      </rect>
@@ -530,7 +569,7 @@
     <property name="geometry">
      <rect>
       <x>140</x>
-      <y>390</y>
+      <y>410</y>
       <width>121</width>
       <height>31</height>
      </rect>

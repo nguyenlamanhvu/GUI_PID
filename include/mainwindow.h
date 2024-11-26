@@ -26,6 +26,10 @@ enum motorMode_t:uint8_t
     GUI_RECEIVE_RIGHT_SPEED_MODE =  0x08,
     GUI_RECEIVE_PARAMETER_LEFT = 	0x09,
     GUI_RECEIVE_PARAMETER_RIGHT =   0x0A,
+    GUI_SET_LEFT_FUZZY_MODE =       0x0B,
+    GUI_SET_RIGHT_FUZZY_MODE =      0x0C,
+    GUI_RECEIVE_LEFT_FUZZY_MODE = 	0x0D,
+    GUI_RECEIVE_RIGHT_FUZZY_MODE = 	0x0E,
 };
 
 #pragma pack(1) // 1 byte alignment

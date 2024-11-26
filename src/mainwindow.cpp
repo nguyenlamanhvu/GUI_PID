@@ -185,6 +185,7 @@ void MainWindow::readData()
     if(this->gRxDataFrame.header == 0x0A && this->gRxDataFrame.footer == 0x06)
     {
         switch (this->gRxDataFrame.mode) {
+        case GUI_RECEIVE_LEFT_FUZZY_MODE:
         case GUI_RECEIVE_PARAMETER_LEFT:
             /*!< Check length of data buffer */
             if(this->gRxDataFrame.length == 16)
@@ -216,6 +217,7 @@ void MainWindow::readData()
                 ui->lstMessages->addItem("Failure");
             }
             break;
+        case GUI_RECEIVE_RIGHT_FUZZY_MODE:
         case GUI_RECEIVE_PARAMETER_RIGHT:
             if(this->gRxDataFrame.length == 16)
             {
@@ -274,6 +276,7 @@ void MainWindow::readData()
                 ui->lstMessages->addItem("Failure");
             }
             break;
+
         default:
             break;
         }
@@ -332,6 +335,12 @@ void MainWindow::on_btnUpdateValue_clicked()
     this->gTxDataFrame.header = 0x0A;
     /*!< Add footer */
     this->gTxDataFrame.footer = 0x05;
+    /*!< Set Kp */
+    float Kp = 0;
+    /*!< Set Ki */
+    float Ki = 0;
+    /*!< Set Kd */
+    float Kd = 0;
     /*!< Add mode */
     if(ui->cbLeftMotor->isChecked() && ui->cbRightMotor->isChecked())
     {
@@ -341,6 +350,9 @@ void MainWindow::on_btnUpdateValue_clicked()
     else if(ui->cbLeftMotor->isChecked() && ui->rdRun->isChecked())
     {
         this->gTxDataFrame.mode = GUI_SET_LEFT_RUN_MODE;
+        Kp = ui->lnKp->text().toFloat();
+        Ki = ui->lnKi->text().toFloat();
+        Kd = ui->lnKd->text().toFloat();
     }
     else if(ui->cbLeftMotor->isChecked() && ui->rdStop->isChecked())
     {
@@ -349,10 +361,25 @@ void MainWindow::on_btnUpdateValue_clicked()
     else if(ui->cbRightMotor->isChecked() && ui->rdRun->isChecked())
     {
         this->gTxDataFrame.mode = GUI_SET_RIGHT_RUN_MODE;
+        Kp = ui->lnKp->text().toFloat();
+        Ki = ui->lnKi->text().toFloat();
+        Kd = ui->lnKd->text().toFloat();
     }
     else if(ui->cbRightMotor->isChecked() && ui->rdStop->isChecked())
     {
         this->gTxDataFrame.mode = GUI_SET_RIGHT_STOP_MODE;
+    }
+    else if (ui->cbLeftMotor->isChecked() &&  ui->rdFuzzyYes->isChecked()) {
+        this->gTxDataFrame.mode = GUI_SET_LEFT_FUZZY_MODE;
+        Kp = 0;
+        Ki = 0;
+        Kd = 0;
+    }
+    else if (ui->cbRightMotor->isChecked() &&  ui->rdFuzzyYes->isChecked()) {
+        this->gTxDataFrame.mode = GUI_SET_RIGHT_FUZZY_MODE;
+        Kp = 0;
+        Ki = 0;
+        Kd = 0;
     }
     else
     {
@@ -365,15 +392,15 @@ void MainWindow::on_btnUpdateValue_clicked()
     memcpy(this->gTxDataFrame.dataBuff, this->uartData.byteArray, sizeof(uartData.byteArray));
     this->gTxDataFrame.length += sizeof(uartData.byteArray);
     /*!< Add Kp value to gRxDataFrame */
-    this->uartData.floatValue = ui->lnKp->text().toFloat();
+    this->uartData.floatValue = Kp;
     memcpy(this->gTxDataFrame.dataBuff + 4, this->uartData.byteArray, sizeof(uartData.byteArray));
     this->gTxDataFrame.length += sizeof(uartData.byteArray);
     /*!< Add Ki value to gRxDataFrame */
-    this->uartData.floatValue = ui->lnKi->text().toFloat();
+    this->uartData.floatValue = Ki;
     memcpy(this->gTxDataFrame.dataBuff + 8, this->uartData.byteArray, sizeof(uartData.byteArray));
     this->gTxDataFrame.length += sizeof(uartData.byteArray);
     /*!< Add Kd value to gRxDataFrame */
-    this->uartData.floatValue = ui->lnKd->text().toFloat();
+    this->uartData.floatValue = Kd;
     memcpy(this->gTxDataFrame.dataBuff + 12, this->uartData.byteArray, sizeof(uartData.byteArray));
     this->gTxDataFrame.length += sizeof(uartData.byteArray);
 
